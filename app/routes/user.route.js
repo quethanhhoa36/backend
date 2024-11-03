@@ -7,8 +7,13 @@ userRoute.route("/")
     .get(users.findAll)
     .post(users.create)
     .delete(users.deleteAll);
+userRoute.route('/by/pages')
+    .get(users.getByPage);
+userRoute.route("/login")
+    .post(users.login)
 userRoute.route("/:id")
-    .post(users.update)
+    .put(users.update)
     .delete(users.delete)
     .get(users.findOne);
+
 module.exports = userRoute;

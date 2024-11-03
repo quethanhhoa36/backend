@@ -24,6 +24,19 @@ exports.create = async(req,res,next)=>{
         );
     }
 }
+
+exports.login = async(req,res,next) =>{
+        try{
+            await User.find({email: req.body.email, password:req.body.password})
+                .then((data) => res.status(200).json(data))
+                .catch((error) => res.status(404).json({message: `Error login! ${err}`}));
+        }
+        catch(error){
+            return next(new ApiError(500,"An error occured"))
+        }
+    }
+
+
 exports.findAll = async (req, res, next) => {
     let documents = [];
     try {
@@ -55,15 +68,10 @@ exports.findOne = async (req, res, next) => {
 };
 
 exports.update = async (req, res, next) => {
-    if (Object.keys(req.body).length === 0) {
-        return next(new ApiError(400, "Data to update can not be empty"));
-    }
     try {
-        const userService = new UserService(MongoDB.client);
-        const document = await userService.update(req.params.id, req.body);
-        if (!document) {
-            return next(new ApiError(404, "User not found"));
-        }
+        await User.findOneAndUpdate({
+            _id: req.params.id
+        }, req.body);
         return res.send({ message: "User was updated successfully" });
     } catch (error) {
         return next(new ApiError(500, `Error updating user with id=${req.params.id}`));
@@ -93,5 +101,17 @@ exports.deleteAll = async (req, res, next)=>{
     }
     catch(error){
         return next(new ApiError(500,"An error occurred while removing all users"));
+    }
+}
+exports.getByPage= async(req,res,next) =>{
+    try{
+        const {page} = req.query
+        User.find({})
+            .skip((page-1)*5).limit(5)
+            .then((data) => res.status(200).json(data))
+            .catch((err) => res.status(500).json(err.message))
+    }
+    catch(error){
+        console.log(error)
     }
 }
