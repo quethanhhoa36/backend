@@ -1,12 +1,17 @@
 const ApiError = require('../api-error')
 const Product = require('../models/Porduct');
-
+const fs=require('fs')
 exports.create = async (req,res,next) =>{
-    const {productname, description, img, author, category} = req.body;
-    Product.create({
+    var data = req.file.path
+    const fileBuffer = fs.readFileSync(data);
+    const {productname, description, author, category} = req.body;
+    await Product.create({
         productname: productname,
         description: description,
-        img: img,
+        image: {
+                data: `data:image/jpeg;base64,${fileBuffer.toString('base64')}`,
+                contentType: req.file.mimetype
+            },
         author: author,
         category: category,
     })
@@ -40,5 +45,18 @@ exports.delete = async (req,res,next) =>{
     }
     catch(error){
         return next(new ApiError(500,"An error occured while deleting product"))
+    }
+}
+
+exports.getByPage= async(req,res,next) =>{
+    try{
+        const {page} = req.query
+        Product.find({})
+            .skip((page-1)*5).limit(5)
+            .then((data) => res.status(200).json(data))
+            .catch((err) => res.status(500).json(err.message))
+    }
+    catch(error){
+        console.log(error)
     }
 }
