@@ -1,11 +1,34 @@
 const express = require("express");
 const products = require('../controllers/product.controller')
 
+const multer = require('multer')
+const path = require('path');
+
+// Cấu hình diskStorage để lưu file vào thư mục 'uploads'
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, 'uploads/'); // thư mục lưu file
+    },
+    filename: function (req, file, cb) {
+        // Đặt tên file với timestamp và tên gốc của file
+        cb(null, Date.now() + '-' + file.originalname);
+    }
+});
+
+const upload = multer({ 
+    storage: storage,
+    limits: { fileSize: 50 * 1024 * 1024 *1024*1024 }
+ });
+
+
+
 const productRoute=express.Router();
 
 productRoute.route('/')
     .get(products.findAll)
-    .post(products.create);
+    .post(upload.single('image'),products.create);
+productRoute.route('/by/pages')
+    .get(products.getByPage);
 productRoute.route('/:id')
     .delete(products.delete);
 
