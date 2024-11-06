@@ -106,3 +106,16 @@ exports.update = async (req, res, next) => {
     }
 
 };
+
+exports.getByPage= async(req,res,next) =>{
+    try{
+        const {page} = req.query
+        User.find({})
+            .skip((page-1)*5).limit(5)
+            .then((data) => res.status(200).json(data))
+            .catch((err) => res.status(500).json(err.message))
+    }
+    catch(error){
+        console.log(error)
+    }
+}
